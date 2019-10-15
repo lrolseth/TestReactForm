@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "test-react-form-client-side-solution",
+    "id": "e097372b-f030-4e35-8629-29fa910c0410",
+    "version": "1.0.0.2",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "webApiPermissionRequests": [
+      {
+        "resource": "Global Travel Email API",
+        "scope": "SendEmail"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/test-react-form.sppkg"
+  }
+}

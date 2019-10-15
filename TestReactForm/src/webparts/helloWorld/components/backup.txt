@@ -1,0 +1,92 @@
+ //Not needed.  this is the same functionality as using the AadHttpClient
+  protected SendEmailWithAadTokenAndHttpClient(emailProps) {
+    this.context.aadTokenProviderFactory
+      .getTokenProvider()
+      .then(
+        (tokenProvider: AadTokenProvider): Promise<string> => {
+          // retrieve access token for the enterprise API secured with Azure AD
+          return tokenProvider.getToken("09c4b84d-13c4-4451-9350-3baedf70aab4");
+        }
+      )
+      .then(
+        (accessToken: string): void => {
+          const postURL =
+            "https://servicesqa.na.cargill.com:8443/a003376/cargillglobal/travelemail/api/?emailtype=html";
+
+          const header: Headers = new Headers();
+          var bearToken = "Bearer " + accessToken;
+          header.append("authorization", bearToken);
+          header.append("cache-control", "no-cache");
+          header.append("content-type", "application/x-www-form-urlencoded");
+          header.append("access-control-allow-origin", "*");
+          header.append("access-control-allow-methods", "POST");
+          header.append(
+            "access-control-allow-headers",
+            "Origin, Content-Type, X-Auth-Token"
+          );
+
+          const httpClientOptions: IHttpClientOptions = {
+            body: emailProps,
+            headers: header
+          };
+
+          this.props.context.httpClient
+            .post(postURL, HttpClient.configurations.v1, httpClientOptions)
+            .then((response: HttpClientResponse) => {
+              console.log("REST API response received.");
+            })
+            .catch(error => {
+              console.error(error);
+            });
+        }
+      );
+  }
+
+
+  @autobind
+  private _invokeAPI(): void {
+    // Create an AadHttpClient object to consume a 3rd party API
+    const aadClient: AadHttpClient = new AadHttpClient(
+      this.props.context.serviceScope,
+      "https://PiaSysDev.onmicrosoft.com/SharePoint.PnP.SampleRESTAPI"
+    );
+
+    console.log("Created aadClient");
+
+    const requestHeaders: Headers = new Headers();
+    requestHeaders.append("Content-type", "application/json");
+
+    const requestOptions: IHttpClientOptions = {
+      headers: requestHeaders,
+      body: JSON.stringify({
+        TextToEcho: this.state.textToEcho
+      })
+    };
+
+    // Search for the users with givenName, surname, or displayName equal to the searchFor value
+    aadClient
+      .post(
+        `https://sppnp-sample-rest-api.azurewebsites.net/api/BusinessAction`,
+        AadHttpClient.configurations.v1,
+        requestOptions
+      )
+      .then(response => {
+        return response.json();
+      })
+      .then(json => {
+        // Log the result in the console for testing purposes
+        console.log(json);
+
+        // Update the component state accordingly to the result
+        this.setState({
+          apiResponse: {
+            username: json.Username,
+            requestDate: json.RequestDate,
+            echo: json.Echo
+          }
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
